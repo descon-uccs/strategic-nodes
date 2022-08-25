@@ -11,7 +11,7 @@ from typing import Tuple, Callable
 Report_States = ["SS", "SI", "IS", "II"]
 
 # The underlying probability whether a path is secure S (q_S) or insecure I (1 - q_S)
-Q = {0: .9,
+Q = {0: .95,
      1: .9}
 
 # p_state_path is the probability with which the signaler will truthfully report the security
@@ -19,27 +19,27 @@ Q = {0: .9,
 # {path : {state : p_}}
 # e.g., if path 1 is secure, then there is a Report_Schedule[1]['S'] chance that the second letter in the report
 #   will be 'S'
-Report_Schedule = {0: {'S': 1.0,
-                       'I': 1.0},
-                   1: {'S': 0.9,
-                       'I': 0.8}}
+Report_Schedule = {0: {'S': .5,
+                       'I': 1},
+                   1: {'S': .5,
+                       'I': 1}}
 
 # The security cost is the cost associated with the security state of a path being insecure
 # The key is the path j and the value is the security cost
 # You can set these values to anything you like as I've clamped the equilibrium values accordingly.
-Security_Costs = {0: 0.2,
-                  1: .1}
+Security_Costs = {0: 1,
+                  1: 1.1}
 
 # If you wish to 'zoom in' to any part of the heat map, you can change these limit values. Keep in mind that
 # the start values cannot be less OR EQUAL TO zero. They cannot be equal to zero as this will put a zero in the
 # denominator of the bayesian equation.
-axis_lims = {'x': {'start': 0.0001,
+axis_lims = {'x': {'start': 0.5,
                    'stop': 1.0},
-             'y': {'start': 0.0001,
+             'y': {'start': 0.5,
                    'stop': 1.0}}
 
 # You can turn this down to 50 for performance, and up to about 300 or 400 for better looks
-ax_len = 100
+ax_len = 300
 
 # These are set later when the output function set-up runs
 plot_title = " "
@@ -264,11 +264,10 @@ def do_br_plot(P: dict[int, Probability]):
 
 
 def best_response_to(path: int, P: dict[int, Probability]):
-    responses = np.linspace(0.0001, 1.0, ax_len)
+    responses = np.linspace(0.5, 1.0, ax_len)
     traffic = np.empty(ax_len)
     for i in range(ax_len):
-        P[path].rs['S'] = responses[i]
-        # Report_Schedule[path]['S'] = responses[i]
+        Report_Schedule[path]['S'] = responses[i]
         exp_flow = 0.0
         for report in Report_States:
             flow = get_equilibrium_flow(report, Security_Costs, P)
