@@ -39,7 +39,7 @@ axis_lims = {'x': {'start': 0.5,
                    'stop': 1.0}}
 
 # You can turn this down to 50 for performance, and up to about 300 or 400 for better looks
-ax_len = 100
+ax_len = 300
 
 # These are set later when the output function set-up runs
 plot_title = " "
@@ -153,6 +153,11 @@ def exp_sec_cost(report_states, c: dict[int: float], P: dict[int, Probability]):
 def set_p_s(index: int, value: float):
     Report_Schedule[1]['S'] = value
 
+def set_p_s_0(index: int, value: float):
+    Report_Schedule[0]['S'] = value
+
+def set_p_s_1(index: int, value: float):
+    Report_Schedule[1]['S'] = value
 
 def set_p_i(index: int, value: float):
     Report_Schedule[1]['I'] = value
@@ -199,6 +204,17 @@ def plot_data(X, Y, Z):
     plt.ylabel(y_label)
     plt.show()
 
+def plot_data_surface(X, Y, Z):
+    custom_map = custom_div_cmap(11, mincol='g', midcol='0.9', maxcol='CornflowerBlue')
+    fig,ax = plt.subplots(subplot_kw={"projection": "3d"})
+    ax.plot_surface(X, Y, Z, cmap=custom_map)
+    plt.axis([X[0, 0], X[ax_len - 1, ax_len - 1], Y[0, 0], Y[ax_len - 1, ax_len - 1]])
+    # plt.colorbar()
+    plt.title(plot_title)
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.show()
+
 
 def demo(P: dict[int, Probability]):
     print(P[0].prob_is_insecure("S"))
@@ -219,6 +235,16 @@ def set_up_latency():
     return exp_latency, set_p_s, set_p_i
 
 
+def set_up_latency_competitive():
+    # Create plot labels
+    global plot_title, x_label, y_label
+    plot_title = "Expected Network Latency"
+    x_label = r'$p_{S_{0}}$'
+    y_label = r'$p_{S_{1}}$'
+
+    return exp_latency, set_p_s_0, set_p_s_1
+
+
 def set_up_security():
     # Create plot labels
     global plot_title, x_label, y_label
@@ -229,13 +255,35 @@ def set_up_security():
     return exp_sec_cost, set_p_s, set_p_i
 
 
+def set_up_security_competitive():
+    # Create plot labels
+    global plot_title, x_label, y_label
+    plot_title = "Expected Security Cost"
+    x_label = r'$p_{S_{0}}$'
+    y_label = r'$p_{S_{1}}$'
+
+    return exp_sec_cost, set_p_s_0, set_p_s_1
+
+
 def do_heat_map(P: dict[int, Probability]):
     # Imitate the following with a custom function of your own to output to the heat map
-    output = set_up_latency()
+    # output = set_up_latency()
     # output = set_up_security()
+    output = set_up_latency_competitive()
+    # output = set_up_security_competitive()
 
     x, y, z = get_data(Report_States, Security_Costs, P, *output)
     plot_data(x, y, z)
+
+
+def do_surface(P: dict[int, Probability]):
+    # Imitate the following with a custom function of your own to output to the heat map
+    # output = set_up_latency()
+    # output = set_up_security()
+    output = set_up_latency_competitive()
+
+    x, y, z = get_data(Report_States, Security_Costs, P, *output)
+    plot_data_surface(x, y, z) # surface
 
 
 def do_br_plot(P: dict[int, Probability]):
@@ -286,7 +334,8 @@ def main():
         P[i] = Probability(Q[i], Report_Schedule[i])
     if do_demo:
         demo(P)
-    # do_heat_map(P)
+    do_heat_map(P)
+    do_surface(P)
     do_br_plot(P)
 
 
