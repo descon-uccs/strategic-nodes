@@ -274,7 +274,8 @@ def best_response_to(path: int, P: dict[int, Probability]):
             exp_flow += prob_of_report(report, P) * flow[path]
         traffic[i] = exp_flow
     # We want to minimize the traffic on our opponent's path
-    return responses[np.argmin(traffic)]
+    best_response = np.argmin(traffic - [0.00000001*i for i in range(len(traffic))])
+    return responses[best_response]
 
 
 def main():
