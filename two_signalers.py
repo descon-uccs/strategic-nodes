@@ -11,7 +11,7 @@ from typing import Tuple, Callable
 Report_States = ["SS", "SI", "IS", "II"]
 
 # The underlying probability whether a path is secure S (q_S) or insecure I (1 - q_S)
-Q = {0: .95,
+Q = {0: .9,
      1: .9}
 
 # p_state_path is the probability with which the signaler will truthfully report the security
@@ -169,12 +169,12 @@ def get_data(report_states, c: dict[int: float], P: dict[int, Probability],
     for i in range(ax_len):
         # This sets probability of truthfulness when path 1 is secure
         # and is the x-dimension of the heat map
-        x_index(i, x[i])
         for j in range(ax_len):
             # This sets probability of truthfulness when path 1 is insecure
             # and is the y-dimension of the heat map
-            y_index(j, y[j])
-            Z[j, i] = data_func(report_states, c, P)
+            x_index(i, X[i,j])
+            y_index(j, Y[i,j])
+            Z[i, j] = data_func(report_states, c, P)
             # Z[i, j] = exp_sec_cost(report_states, c, P)
     return X, Y, Z
 
