@@ -27,8 +27,8 @@ Report_Schedule = {0: {'S': .5,
 # The security cost is the cost associated with the security state of a path being insecure
 # The key is the path j and the value is the security cost
 # You can set these values to anything you like as I've clamped the equilibrium values accordingly.
-Security_Costs = {0: .5,
-                  1: 20}
+Security_Costs = {0: 4,
+                  1: 1.8}
 
 # If you wish to 'zoom in' to any part of the heat map, you can change these limit values. Keep in mind that
 # the start values cannot be less OR EQUAL TO zero. They cannot be equal to zero as this will put a zero in the
@@ -39,7 +39,7 @@ axis_lims = {'x': {'start': 0.5,
                    'stop': 1}}
 
 # You can turn this down to 50 for performance, and up to about 300 or 400 for better looks
-ax_len = 200
+ax_len = 100
 
 # These are set later when the output function set-up runs
 plot_title = " "
@@ -182,9 +182,9 @@ def get_data(report_states, c: dict[int: float], P: dict[int, Probability],
         for j in range(ax_len):
             # This sets probability of truthfulness when path 1 is insecure
             # and is the y-dimension of the heat map
-            x_index(i, X[i,j])
-            y_index(j, Y[i,j])
-            Z[i, j] = data_func(report_states, c, P)
+            x_index(i, X[j,i])
+            y_index(j, Y[j,i])
+            Z[j, i] = data_func(report_states, c, P)
             # Z[i, j] = exp_sec_cost(report_states, c, P)
     return X, Y, Z
 
@@ -322,18 +322,18 @@ def do_br_plot(P: dict[int, Probability]):
         for j in range(2):
             # e.g., j is 0, so the opponent is 1. This means we must fix our own reporting, which, in this context
             # (see the above explanation of Report_Schedule), means that we must
-            opponent = (j + 1) % 2
+            opponent = (j + 1) % 2 # opponent = 1-j
             # Set the 'opponent' report schedule to the x-axis value
-            Report_Schedule[j]['S'] = x[i]
+            Report_Schedule[j]['S'] = x[i] # this is the report about j (i.e., opponent's report)
             # Find current player's best response to this updated report schedule value by varying the reporting on
             # the opponent and trying to minimize their traffic
-            br[j, i] = best_response_to(opponent, P)
+            br[j, i] = best_response_to(opponent, P) # get j's optimal report: Report_Schedule[1-j]['S']
 
     fig = plt.figure()
     ax = plt.axes()
 
-    ax.plot(x, br[0], color='blue', label=r'$p_{S_0}(p_{S_1})$ (BR of path 1 to path 0\'s report)')
-    ax.plot(x, br[1], color='red', label=r'$p_{S_1}(p_{S_0})$ (BR of path 0 to path 1\'s report)')
+    ax.plot(x, br[0], color='blue', label=r'$p_{S_1}(p_{S_0})$ (BR of path 1 to path 0\'s report)')
+    ax.plot(x, br[1], color='red', label=r'$p_{S_0}(p_{S_1})$ (BR of path 0 to path 1\'s report)')
     plt.xlabel(r'$p_S$')
     plt.title("Best Response")
     plt.legend()
@@ -341,18 +341,19 @@ def do_br_plot(P: dict[int, Probability]):
 
 
 def best_response_to(path: int, P: dict[int, Probability]):
+    # path is index of my opponent
     responses = np.linspace(0.5, 1.0, ax_len)
     traffic = np.empty(ax_len)
     for i in range(ax_len):
-        Report_Schedule[path]['S'] = responses[i]
+        Report_Schedule[path]['S'] = responses[i] # this is my report, about my opponent
         exp_flow = 0.0
         for report in Report_States:
             flow = get_equilibrium_flow(report, Security_Costs, P)
-            exp_flow += prob_of_report(report, P) * flow[path]
+            exp_flow += prob_of_report(report, P) * flow[path] # exp flow on my opponent's path
         traffic[i] = exp_flow
     # We want to minimize the traffic on our opponent's path
     best_response = np.argmin(traffic - [0.00000001*i for i in range(len(traffic))]) # when best reponse is ambiguous, pick the most informative signal
-    return responses[best_response]
+    return responses[best_response] 
 
 
 def main():
@@ -364,8 +365,8 @@ def main():
     if do_demo:
         demo(P)
     do_heat_map(P,[set_up_security_competitive, 
-                   set_up_latency_competitive,
-                   set_up_social_competitive])
+                    set_up_latency_competitive,
+                    set_up_social_competitive])
     # do_surface(P)
     do_br_plot(P)
 
