@@ -184,7 +184,7 @@ def get_data(report_states, c: dict[int: float], P: dict[int, Probability],
             # This sets probability of truthfulness when path 1 is insecure
             # and is the y-dimension of the heat map
             y_index(j, y[j])
-            Z[i,j] = data_func(report_states, c, P)
+            Z[j, i] = data_func(report_states, c, P)
             # Z[i, j] = exp_sec_cost(report_states, c, P)
     return X, Y, Z
 
