@@ -265,15 +265,22 @@ def set_up_security_competitive():
     return exp_sec_cost, set_p_s_0, set_p_s_1
 
 
-def do_heat_map(P: dict[int, Probability]):
+def do_heat_map(P: dict[int, Probability], funcList=None):
+    # funcList is array-like of set_up_... function names
     # Imitate the following with a custom function of your own to output to the heat map
     # output = set_up_latency()
     # output = set_up_security()
     output = set_up_latency_competitive()
     # output = set_up_security_competitive()
-
-    x, y, z = get_data(Report_States, Security_Costs, P, *output)
-    plot_data(x, y, z)
+    
+    if funcList is None :
+        funcList = [set_up_latency_competitive]
+    
+    for func in funcList :
+        output = func()
+        x, y, z = get_data(Report_States, Security_Costs, P, *output)
+        plt.figure()
+        plot_data(x, y, z)
 
 
 def do_surface(P: dict[int, Probability]):
@@ -334,8 +341,8 @@ def main():
         P[i] = Probability(Q[i], Report_Schedule[i])
     if do_demo:
         demo(P)
-    do_heat_map(P)
-    do_surface(P)
+    do_heat_map(P,[set_up_security_competitive, set_up_latency_competitive])
+    # do_surface(P)
     do_br_plot(P)
 
 
