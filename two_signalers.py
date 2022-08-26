@@ -332,8 +332,8 @@ def do_br_plot(P: dict[int, Probability]):
     fig = plt.figure()
     ax = plt.axes()
 
-    ax.plot(x, br[0], color='blue', label=r'$B_0(p_{S_1})$')
-    ax.plot(x, br[1], color='red', label=r'$B_1(p_{S_0})$')
+    ax.plot(x, br[0], color='blue', label=r'$p_{S_0}(p_{S_1})$ (BR of path 1 to path 0\'s report)')
+    ax.plot(x, br[1], color='red', label=r'$p_{S_1}(p_{S_0})$ (BR of path 0 to path 1\'s report)')
     plt.xlabel(r'$p_S$')
     plt.title("Best Response")
     plt.legend()
