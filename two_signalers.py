@@ -39,7 +39,7 @@ axis_lims = {'x': {'start': 0.5,
                    'stop': 1.0}}
 
 # You can turn this down to 50 for performance, and up to about 300 or 400 for better looks
-ax_len = 300
+ax_len = 200
 
 # These are set later when the output function set-up runs
 plot_title = " "
@@ -148,6 +148,11 @@ def exp_sec_cost(report_states, c: dict[int: float], P: dict[int, Probability]):
     for report_state in report_states:
         total += prob_of_report(report_state, P) * network_security_cost(report_state, c, P)
     return total
+
+def exp_social_cost(report_states: list[str], c: dict[int: float], P: dict[int, Probability]):
+    # Calculates social cost for each possible report state, then aggregates this to arrive at
+    # expected latency across the report state space
+    return exp_sec_cost(report_states, c, P) + exp_latency(report_states, c, P)
 
 
 def set_p_s(index: int, value: float):
@@ -265,13 +270,24 @@ def set_up_security_competitive():
     return exp_sec_cost, set_p_s_0, set_p_s_1
 
 
+def set_up_social_competitive():
+    # Create plot labels
+    global plot_title, x_label, y_label
+    plot_title = "Expected Social Cost"
+    x_label = r'$p_{S_{0}}$'
+    y_label = r'$p_{S_{1}}$'
+
+    return exp_social_cost, set_p_s_0, set_p_s_1
+
+
 def do_heat_map(P: dict[int, Probability], funcList=None):
     # funcList is array-like of set_up_... function names
     # Imitate the following with a custom function of your own to output to the heat map
     # output = set_up_latency()
     # output = set_up_security()
-    output = set_up_latency_competitive()
+    # output = set_up_latency_competitive()
     # output = set_up_security_competitive()
+    # output = set_up_social_competitive()
     
     if funcList is None :
         funcList = [set_up_latency_competitive]
@@ -283,14 +299,20 @@ def do_heat_map(P: dict[int, Probability], funcList=None):
         plot_data(x, y, z)
 
 
-def do_surface(P: dict[int, Probability]):
+def do_surface(P: dict[int, Probability], funcList=None):
+    # funcList is array-like of set_up_... function names
     # Imitate the following with a custom function of your own to output to the heat map
     # output = set_up_latency()
     # output = set_up_security()
-    output = set_up_latency_competitive()
-
-    x, y, z = get_data(Report_States, Security_Costs, P, *output)
-    plot_data_surface(x, y, z) # surface
+    # output = set_up_latency_competitive()
+    
+    if funcList is None :
+        funcList = [set_up_latency_competitive]
+    
+    for func in funcList :
+        output = func()
+        x, y, z = get_data(Report_States, Security_Costs, P, *output)
+        plot_data_surface(x, y, z) # surface
 
 
 def do_br_plot(P: dict[int, Probability]):
@@ -341,7 +363,9 @@ def main():
         P[i] = Probability(Q[i], Report_Schedule[i])
     if do_demo:
         demo(P)
-    do_heat_map(P,[set_up_security_competitive, set_up_latency_competitive])
+    do_surface(P,[set_up_security_competitive, 
+                   set_up_latency_competitive,
+                   set_up_social_competitive])
     # do_surface(P)
     do_br_plot(P)
 
