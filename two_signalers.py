@@ -11,8 +11,8 @@ from typing import Tuple, Callable
 Report_States = ["SS", "SI", "IS", "II"]
 
 # The underlying probability whether a path is secure S (q_S) or insecure I (1 - q_S)
-Q = {0: .9,
-     1: .9}
+Q = {0: .99,
+     1: .98}
 
 # p_state_path is the probability with which the signaler will truthfully report the security
 #     state of the path when the path is in specified state
@@ -27,16 +27,16 @@ Report_Schedule = {0: {'S': .5,
 # The security cost is the cost associated with the security state of a path being insecure
 # The key is the path j and the value is the security cost
 # You can set these values to anything you like as I've clamped the equilibrium values accordingly.
-Security_Costs = {0: 2,
-                  1: 1.8}
+Security_Costs = {0: .5,
+                  1: 20}
 
 # If you wish to 'zoom in' to any part of the heat map, you can change these limit values. Keep in mind that
 # the start values cannot be less OR EQUAL TO zero. They cannot be equal to zero as this will put a zero in the
 # denominator of the bayesian equation.
 axis_lims = {'x': {'start': 0.5,
-                   'stop': 1.0},
+                   'stop': 1},
              'y': {'start': 0.5,
-                   'stop': 1.0}}
+                   'stop': 1}}
 
 # You can turn this down to 50 for performance, and up to about 300 or 400 for better looks
 ax_len = 200
@@ -184,7 +184,7 @@ def get_data(report_states, c: dict[int: float], P: dict[int, Probability],
             # This sets probability of truthfulness when path 1 is insecure
             # and is the y-dimension of the heat map
             y_index(j, y[j])
-            Z[i, j] = data_func(report_states, c, P)
+            Z[i,j] = data_func(report_states, c, P)
             # Z[i, j] = exp_sec_cost(report_states, c, P)
     return X, Y, Z
 
@@ -363,7 +363,7 @@ def main():
         P[i] = Probability(Q[i], Report_Schedule[i])
     if do_demo:
         demo(P)
-    do_surface(P,[set_up_security_competitive, 
+    do_heat_map(P,[set_up_security_competitive, 
                    set_up_latency_competitive,
                    set_up_social_competitive])
     # do_surface(P)
