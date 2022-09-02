@@ -28,8 +28,8 @@ Report_Schedule = {0: {'S': .5,
 # The security cost is the cost associated with the security state of a path being insecure
 # The key is the path j and the value is the security cost
 # You can set these values to anything you like as I've clamped the equilibrium values accordingly.
-Security_Costs = {0: 4,
-                  1: 1.8}
+Security_Costs = {0: 5,
+                  1: 4}
 
 # If you wish to 'zoom in' to any part of the heat map, you can change these limit values. Keep in mind that
 # the start values cannot be less OR EQUAL TO zero. They cannot be equal to zero as this will put a zero in the
@@ -311,6 +311,7 @@ def do_heat_map(P: dict[int, Probability], funcList=None):
         x, y, z = get_data(Report_States, Security_Costs, P, *output)
         plt.figure()
         plot_data(x, y, z)
+        plot_boundary_lines()
 
 
 def do_surface(P: dict[int, Probability], funcList=None):
@@ -327,6 +328,27 @@ def do_surface(P: dict[int, Probability], funcList=None):
         output = func()
         x, y, z = get_data(Report_States, Security_Costs, P, *output)
         plot_data_surface(x, y, z)  # surface
+        
+def plot_boundary_lines() :
+    # plots lines delineating the parameter regime boundaries
+    
+    C = Security_Costs
+    
+    hline = (1-C[1]*(1-Q[1]))/Q[1]
+    plt.axhline(hline)
+    
+    vline = (1-C[0]*(1-Q[0]))/Q[0]
+    plt.axvline(vline)
+    
+    pp = np.linspace(0.5,1,100)
+    pp0 = np.empty_like(pp)
+    pp1 = np.empty_like(pp)
+    for i in range(len(pp)):
+        pp1[i] = ((1-Q[0]*pp[i]) * (1-C[1]*(1-Q[1])) + C[0]*(1-Q[0])) / (Q[1]* (1-Q[0]*pp[i] + C[0]*(1-Q[0])))
+        pp0[i] = ((1-Q[1]*pp[i]) * (1-C[0]*(1-Q[0])) + C[1]*(1-Q[1])) / (Q[0]* (1-Q[1]*pp[i] + C[1]*(1-Q[1])))
+    
+    plt.plot(pp0,pp)
+    plt.plot(pp,pp1)
 
 
 def do_br_plot(P: dict[int, Probability]):
@@ -370,6 +392,29 @@ def best_response_to(path: int, P: dict[int, Probability]):
         len(traffic))])  # when best reponse is ambiguous, pick the most informative signal
     return responses[best_response]
 
+
+def find_parameter_region(c, q, P) :
+    # returns the letter code of the parameter region
+    p0 = P[0].rs['S']
+    p1 = P[1].rs['S']
+    
+    all_regions = {'A','B','C','D','E','F','G','H'}
+    regions = {'A','B','C','D','E','F','G','H'}
+    if p1 >= (1-c[1]*(1-q[1]))/q[1] :
+        regions = regions - {'A','C','E'}
+    else : regions = regions - (all_regions - {'A','C','E'})
+    if p0 >= (1-c[0]*(1-q[0]))/q[0] :
+        regions = regions - {'A','B','D'}
+    else: regions = regions - (all_regions - {'A','B','D'})
+    if c[1]*(1-q[1])/(1-q[1]*p1) - c[0]*(1-q[0])/(1-q[0]*p0) < 1 :
+        regions = regions - {'D','F'}
+    else: regions = regions - (all_regions - {'D','F'})
+    if -c[1]*(1-q[1])/(1-q[1]*p1) + c[0]*(1-q[0])/(1-q[0]*p0) < 1 :
+        regions = regions - {'E','G'}
+    else: regions = regions - (all_regions - {'E','G'})
+    return regions
+    
+        
 
 def main():
     do_demo = False
