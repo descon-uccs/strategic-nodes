@@ -28,8 +28,8 @@ Report_Schedule = {0: {'S': .5,
 # The security cost is the cost associated with the security state of a path being insecure
 # The key is the path j and the value is the security cost
 # You can set these values to anything you like as I've clamped the equilibrium values accordingly.
-Security_Costs = {0: 5,
-                  1: 4}
+Security_Costs = {0: 3,
+                  1: 5}
 
 # If you wish to 'zoom in' to any part of the heat map, you can change these limit values. Keep in mind that
 # the start values cannot be less OR EQUAL TO zero. They cannot be equal to zero as this will put a zero in the
@@ -40,12 +40,18 @@ axis_lims = {'x': {'start': 0.5,
                    'stop': 1}}
 
 # You can turn this down to 50 for performance, and up to about 300 or 400 for better looks
-ax_len = 100
+ax_len = 200
 
 # These are set later when the output function set-up runs
 plot_title = " "
 x_label = " "
 y_label = " "
+
+fontsize = 12
+plt.rcParams['axes.labelsize'] = fontsize
+plt.rcParams['axes.titlesize'] = fontsize
+plt.rcParams['xtick.labelsize'] = fontsize
+plt.rcParams['ytick.labelsize'] = fontsize
 
 
 # The probability class contains the probability parameters for a single path. Each path will have a
@@ -208,7 +214,8 @@ def plot_data(X, Y, Z):
     custom_map = custom_div_cmap(11, mincol='g', midcol='0.9', maxcol='CornflowerBlue')
     plt.pcolormesh(X, Y, Z, cmap=custom_map, shading='auto')
     plt.axis([X[0, 0], X[ax_len - 1, ax_len - 1], Y[0, 0], Y[ax_len - 1, ax_len - 1]])
-    plt.colorbar()
+    cbar = plt.colorbar()
+    cbar.ax.tick_params(labelsize=fontsize) 
     plt.title(plot_title)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
@@ -294,7 +301,7 @@ def set_up_social_competitive():
     return exp_social_cost, set_p_s_0, set_p_s_1
 
 
-def do_heat_map(P: dict[int, Probability], funcList=None):
+def do_heat_map(P: dict[int, Probability], funcList=None,plotlines=True,plotNE=True):
     # funcList is array-like of set_up_... function names
     # Imitate the following with a custom function of your own to output to the heat map
     # output = set_up_latency()
@@ -311,7 +318,10 @@ def do_heat_map(P: dict[int, Probability], funcList=None):
         x, y, z = get_data(Report_States, Security_Costs, P, *output)
         plt.figure()
         plot_data(x, y, z)
-        plot_boundary_lines()
+        if plotlines:
+            plot_boundary_lines()
+        if plotNE: 
+            plot_NE()
 
 
 def do_surface(P: dict[int, Probability], funcList=None):
@@ -329,16 +339,30 @@ def do_surface(P: dict[int, Probability], funcList=None):
         x, y, z = get_data(Report_States, Security_Costs, P, *output)
         plot_data_surface(x, y, z)  # surface
         
+def plot_NE() :
+    # plots lines delineating the parameter regime boundaries
+    
+    C = Security_Costs
+    
+    ypoint = (1-C[1]*(1-Q[1]))/Q[1]
+    xpoint = (1-C[0]*(1-Q[0]))/Q[0]
+    
+    
+    plt.axhline(ypoint,(xpoint-.5)*2-.05,(xpoint-.5)*2+0.05,c='k')
+    plt.axvline(xpoint,(ypoint-.5)*2-.05,(ypoint-.5)*2+0.05,c='k')
+    
+    plt.scatter(xpoint,ypoint,s=10,c='k')
+        
 def plot_boundary_lines() :
     # plots lines delineating the parameter regime boundaries
     
     C = Security_Costs
     
     hline = (1-C[1]*(1-Q[1]))/Q[1]
-    plt.axhline(hline)
+    plt.axhline(hline,0,1,c='k')
     
     vline = (1-C[0]*(1-Q[0]))/Q[0]
-    plt.axvline(vline)
+    plt.axvline(vline,0,1,c='k')
     
     pp = np.linspace(0.5,1,100)
     pp0 = np.empty_like(pp)
@@ -347,8 +371,8 @@ def plot_boundary_lines() :
         pp1[i] = ((1-Q[0]*pp[i]) * (1-C[1]*(1-Q[1])) + C[0]*(1-Q[0])) / (Q[1]* (1-Q[0]*pp[i] + C[0]*(1-Q[0])))
         pp0[i] = ((1-Q[1]*pp[i]) * (1-C[0]*(1-Q[0])) + C[1]*(1-Q[1])) / (Q[0]* (1-Q[1]*pp[i] + C[1]*(1-Q[1])))
     
-    plt.plot(pp0,pp)
-    plt.plot(pp,pp1)
+    plt.plot(pp0,pp,'k')
+    plt.plot(pp,pp1,'k')
 
 
 def do_br_plot(P: dict[int, Probability]):
@@ -424,11 +448,11 @@ def main():
         P[i] = Probability(Q[i], Report_Schedule[i])
     if do_demo:
         demo(P)
-    do_heat_map(P, [set_up_security_competitive,
+    do_heat_map(P, [#set_up_security_competitive,
                     set_up_latency_competitive,
-                    set_up_social_competitive])
+                    set_up_social_competitive],plotlines=False)
     # do_surface(P)
-    do_br_plot(P)
+    # do_br_plot(P)
 
 
 if __name__ == '__main__':
