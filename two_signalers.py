@@ -255,8 +255,8 @@ def set_up_latency():
     # Create plot labels
     global plot_title, x_label, y_label
     plot_title = "Expected Network Latency" + get_latex_param_subtitle()
-    x_label = r'$p_{S_{1}}$'
-    y_label = r'$p_{I_{1}}$'
+    x_label = r'$p_{{1}}$'
+    y_label = r'$p_{{1}}$'
 
     return exp_latency, set_p_s, set_p_i
 
@@ -265,8 +265,8 @@ def set_up_latency_competitive():
     # Create plot labels
     global plot_title, x_label, y_label
     plot_title = "Expected Network Latency" + get_latex_param_subtitle()
-    x_label = r'$p_{S_{0}}$'
-    y_label = r'$p_{S_{1}}$'
+    x_label = r'$p_{{0}}$'
+    y_label = r'$p_{{1}}$'
 
     return exp_latency, set_p_s_0, set_p_s_1
 
@@ -275,8 +275,8 @@ def set_up_security():
     # Create plot labels
     global plot_title, x_label, y_label
     plot_title = "Expected Security Cost\n" + get_latex_param_subtitle()
-    x_label = r'$p_{S_{1}}$'
-    y_label = r'$p_{I_{1}}$'
+    x_label = r'$p_{{1}}$'
+    y_label = r'$p_{{1}}$'
 
     return exp_sec_cost, set_p_s, set_p_i
 
@@ -285,8 +285,8 @@ def set_up_security_competitive():
     # Create plot labels
     global plot_title, x_label, y_label
     plot_title = "Expected Security Cost" + get_latex_param_subtitle()
-    x_label = r'$p_{S_{0}}$'
-    y_label = r'$p_{S_{1}}$'
+    x_label = r'$p_{{0}}$'
+    y_label = r'$p_{{1}}$'
 
     return exp_sec_cost, set_p_s_0, set_p_s_1
 
@@ -295,8 +295,8 @@ def set_up_social_competitive():
     # Create plot labels
     global plot_title, x_label, y_label
     plot_title = "Expected Social Cost" + get_latex_param_subtitle()
-    x_label = r'$p_{S_{0}}$'
-    y_label = r'$p_{S_{1}}$'
+    x_label = r'$p_{{0}}$'
+    y_label = r'$p_{{1}}$'
 
     return exp_social_cost, set_p_s_0, set_p_s_1
 
@@ -392,9 +392,9 @@ def do_br_plot(P: dict[int, Probability]):
     fig = plt.figure()
     ax = plt.axes()
 
-    ax.plot(x, br[0], color='blue', label=r'$p_{S_1}(p_{S_0})$ (BR of path 0 to path 1\'s report)')
-    ax.plot(x, br[1], color='red', label=r'$p_{S_0}(p_{S_1})$ (BR of path 1 to path 0\'s report)')
-    plt.xlabel(r'$p_S$')
+    ax.plot(x, br[0], color='blue', label=r'$p_{1}(p_{0})$ (BR of path 0 to path 1\'s report)')
+    ax.plot(x, br[1], color='red', label=r'$p_{0}(p_{1})$ (BR of path 1 to path 0\'s report)')
+    plt.xlabel(r'$p$')
     plt.title("Best Response" + get_latex_param_subtitle())
     plt.legend()
     plt.show()
