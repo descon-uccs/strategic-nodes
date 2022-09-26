@@ -28,8 +28,8 @@ Report_Schedule = {0: {'S': .5,
 # The security cost is the cost associated with the security state of a path being insecure
 # The key is the path j and the value is the security cost
 # You can set these values to anything you like as I've clamped the equilibrium values accordingly.
-Security_Costs = {0: 3,
-                  1: 5}
+Security_Costs = {0: 15,
+                  1: 20}
 
 # If you wish to 'zoom in' to any part of the heat map, you can change these limit values. Keep in mind that
 # the start values cannot be less OR EQUAL TO zero. They cannot be equal to zero as this will put a zero in the
@@ -450,10 +450,24 @@ def main():
         demo(P)
     do_heat_map(P, [#set_up_security_competitive,
                     set_up_latency_competitive,
-                    set_up_social_competitive],plotlines=False)
+                    set_up_social_competitive],plotlines=True)
     # do_surface(P)
-    # do_br_plot(P)
+    do_br_plot(P)
 
 
 if __name__ == '__main__':
     main()
+    
+def plots_for_paper() :
+    # note -- this function doesn't do it, but it does display the correct values here.
+    # May need to make Security_Costs a global
+    Q = {0: .9,
+         1: .9}
+
+    Security_Costs = {0: 3,
+                      1: 5}
+    P = dict()
+    for i in range(2):
+        P[i] = Probability(Q[i], Report_Schedule[i])
+    do_heat_map(P, [set_up_latency_competitive,
+                    set_up_social_competitive],plotlines=False)
